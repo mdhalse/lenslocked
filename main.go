@@ -19,8 +19,8 @@ func executeTemplate(w http.ResponseWriter, fp string) {
 		http.Error(w, "There was an error parsing the template.", http.StatusInternalServerError)
 		return
 	}
-	
-	err = tmpl.Execute(w, nil) 
+
+	err = tmpl.Execute(w, nil)
 	if err != nil {
 		log.Printf("executing template: %v", err)
 		http.Error(w, "There was an error executing the template.", http.StatusInternalServerError)
@@ -29,25 +29,22 @@ func executeTemplate(w http.ResponseWriter, fp string) {
 }
 
 func homeHandler(w http.ResponseWriter, r *http.Request) {
-	tmplPath := filepath.Join("templates", "home.gohtml")
-	executeTemplate(w, tmplPath)
+	executeTemplate(w, filepath.Join("templates", "home.gohtml"))
 }
 
 func contactHandler(w http.ResponseWriter, r *http.Request) {
-	tmplPath := filepath.Join("templates", "contact.gohtml")
-	executeTemplate(w, tmplPath)
+	executeTemplate(w, filepath.Join("templates", "contact.gohtml"))
 }
 
 func faqHandler(w http.ResponseWriter, r *http.Request) {
-	tmplPath := filepath.Join("templates", "faq.gohtml")
-	executeTemplate(w, tmplPath)
+	executeTemplate(w, filepath.Join("templates", "faq.gohtml"))
 }
 
 func greeterHandler(w http.ResponseWriter, r *http.Request) {
 	nameParam := chi.URLParam(r, "name")
 
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	w.Write([]byte(fmt.Sprintf("<h1>Hello!<h2><p>Greetings to %s", nameParam)))
+	fmt.Fprint(w, fmt.Sprintf("<h1>Hello!</h1><p>Greetings to %s</p>", nameParam))
 }
 
 func main() {
