@@ -44,7 +44,7 @@ func greeterHandler(w http.ResponseWriter, r *http.Request) {
 	nameParam := chi.URLParam(r, "name")
 
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	fmt.Fprint(w, fmt.Sprintf("<h1>Hello!</h1><p>Greetings to %s</p>", nameParam))
+	fmt.Fprintf(w, "<h1>Hello!</h1><p>Greetings to %s</p>", nameParam)
 }
 
 func main() {
