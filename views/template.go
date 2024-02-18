@@ -28,4 +28,3 @@ func (t Template) Execute(w http.ResponseWriter, data interface{}) {
 		return
 	}
 }
-
