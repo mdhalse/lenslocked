@@ -3,11 +3,11 @@ package main
 import (
 	"fmt"
 	"net/http"
-	"path/filepath"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/mdhalse/lenslocked/controllers"
+	"github.com/mdhalse/lenslocked/templates"
 	"github.com/mdhalse/lenslocked/views"
 )
 
@@ -19,13 +19,13 @@ func main() {
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
 
-	tpl := views.Must(views.Parse(filepath.Join("templates", "home.gohtml")))
+	tpl := views.Must(views.ParseFS(templates.FS, "home.gohtml"))
 	r.Get("/", controllers.StaticHandler(tpl))
 
-	tpl = views.Must(views.Parse(filepath.Join("templates", "contact.gohtml")))
+	tpl = views.Must(views.ParseFS(templates.FS, "contact.gohtml"))
 	r.Get("/contact", controllers.StaticHandler(tpl))
 
-	tpl = views.Must(views.Parse(filepath.Join("templates", "faq.gohtml")))
+	tpl = views.Must(views.ParseFS(templates.FS, "faq.gohtml"))
 	r.Get("/faq", controllers.StaticHandler(tpl))
 
 	r.NotFound(http.NotFound)
