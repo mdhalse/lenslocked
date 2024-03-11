@@ -109,7 +109,7 @@ func main() {
 		panic(err)
 	}
 	defer rows.Close()
-	
+
 	for rows.Next() {
 		var order Order
 		order.UserID = userID

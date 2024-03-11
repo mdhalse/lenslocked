@@ -6,6 +6,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/gorilla/csrf"
 	"github.com/mdhalse/lenslocked/controllers"
 	"github.com/mdhalse/lenslocked/models"
 	"github.com/mdhalse/lenslocked/templates"
@@ -15,6 +16,9 @@ import (
 func main() {
 	r := chi.NewRouter()
 
+	// TODO: Don't use secure==false in production envs
+	csrfKey := "gFvi44Fy5xnbLNeEztQbfAvCyEIaux"
+	r.Use(csrf.Protect([]byte(csrfKey), csrf.Secure(false)))
 	r.Use(middleware.RequestID)
 	r.Use(middleware.CleanPath)
 	r.Use(middleware.Logger)
@@ -36,7 +40,7 @@ func main() {
 	}
 	defer db.Close()
 
-	userService:= models.UserService{
+	userService := models.UserService{
 		DB: db,
 	}
 
@@ -49,6 +53,7 @@ func main() {
 	r.Post("/users", usersController.Create)
 	r.Get("/signin", usersController.SignIn)
 	r.Post("/signin", usersController.ProcessSignIn)
+	r.Get("/users/me", usersController.CurrentUser)
 
 	r.NotFound(http.NotFound)
 
