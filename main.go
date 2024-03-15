@@ -43,9 +43,13 @@ func main() {
 	userService := models.UserService{
 		DB: db,
 	}
+	sessionService := models.SessionService{
+		DB: db,
+	}
 
 	usersController := controllers.Users{
-		UserService: &userService,
+		UserService:    &userService,
+		SessionService: &sessionService,
 	}
 	usersController.Templates.New = views.Must(views.ParseFS(templates.FS, "tailwind.gohtml", "signup.gohtml"))
 	usersController.Templates.SignIn = views.Must(views.ParseFS(templates.FS, "tailwind.gohtml", "signin.gohtml"))
@@ -53,6 +57,7 @@ func main() {
 	r.Post("/users", usersController.Create)
 	r.Get("/signin", usersController.SignIn)
 	r.Post("/signin", usersController.ProcessSignIn)
+	r.Post("/signout", usersController.ProcessSignOut)
 	r.Get("/users/me", usersController.CurrentUser)
 
 	r.NotFound(http.NotFound)
