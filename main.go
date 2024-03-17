@@ -8,6 +8,7 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/gorilla/csrf"
 	"github.com/mdhalse/lenslocked/controllers"
+	"github.com/mdhalse/lenslocked/migrations"
 	"github.com/mdhalse/lenslocked/models"
 	"github.com/mdhalse/lenslocked/templates"
 	"github.com/mdhalse/lenslocked/views"
@@ -40,7 +41,7 @@ func main() {
 	}
 	defer db.Close()
 
-	err = models.Migrate(db, "migrations")
+	err = models.MigrateFS(db, migrations.FS, ".")
 	if err != nil {
 		panic(err)
 	}
