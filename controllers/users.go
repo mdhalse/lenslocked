@@ -120,6 +120,11 @@ func (umw UserMiddleware) SetUser(next http.Handler) http.Handler {
 			next.ServeHTTP(w, r)
 			return
 		}
+		if token == "" {
+			fmt.Println("Token is an empty string, not setting user")
+			next.ServeHTTP(w, r)
+			return
+		}
 		user, err := umw.SessionService.User(token)
 		if err != nil {
 			next.ServeHTTP(w, r)
