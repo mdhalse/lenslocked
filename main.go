@@ -15,25 +15,6 @@ import (
 )
 
 func main() {
-	r := chi.NewRouter()
-
-	// TODO: Don't use secure==false in production envs
-	csrfKey := "gFvi44Fy5xnbLNeEztQbfAvCyEIaux"
-	r.Use(csrf.Protect([]byte(csrfKey), csrf.Secure(false)))
-	r.Use(middleware.RequestID)
-	r.Use(middleware.CleanPath)
-	r.Use(middleware.Logger)
-	r.Use(middleware.Recoverer)
-
-	tpl := views.Must(views.ParseFS(templates.FS, "tailwind.gohtml", "home.gohtml"))
-	r.Get("/", controllers.StaticHandler(tpl))
-
-	tpl = views.Must(views.ParseFS(templates.FS, "tailwind.gohtml", "contact.gohtml"))
-	r.Get("/contact", controllers.StaticHandler(tpl))
-
-	tpl = views.Must(views.ParseFS(templates.FS, "tailwind.gohtml", "faq.gohtml"))
-	r.Get("/faq", controllers.FAQ(tpl))
-
 	cfg := models.DefaultPostgresConfig()
 	db, err := models.Open(cfg)
 	if err != nil {
@@ -53,6 +34,30 @@ func main() {
 		DB: db,
 	}
 
+	umw := controllers.UserMiddleware{
+		SessionService: &sessionService,
+	}
+
+	r := chi.NewRouter()
+
+	// TODO: Don't use secure==false in production envs
+	csrfKey := "gFvi44Fy5xnbLNeEztQbfAvCyEIaux"
+	r.Use(csrf.Protect([]byte(csrfKey), csrf.Secure(false)))
+	r.Use(umw.SetUser)
+	r.Use(middleware.RequestID)
+	r.Use(middleware.CleanPath)
+	r.Use(middleware.Logger)
+	r.Use(middleware.Recoverer)
+
+	tpl := views.Must(views.ParseFS(templates.FS, "tailwind.gohtml", "home.gohtml"))
+	r.Get("/", controllers.StaticHandler(tpl))
+
+	tpl = views.Must(views.ParseFS(templates.FS, "tailwind.gohtml", "contact.gohtml"))
+	r.Get("/contact", controllers.StaticHandler(tpl))
+
+	tpl = views.Must(views.ParseFS(templates.FS, "tailwind.gohtml", "faq.gohtml"))
+	r.Get("/faq", controllers.FAQ(tpl))
+
 	usersController := controllers.Users{
 		UserService:    &userService,
 		SessionService: &sessionService,
@@ -64,7 +69,10 @@ func main() {
 	r.Get("/signin", usersController.SignIn)
 	r.Post("/signin", usersController.ProcessSignIn)
 	r.Post("/signout", usersController.ProcessSignOut)
-	r.Get("/users/me", usersController.CurrentUser)
+	r.Route("/users/me", func(r chi.Router) {
+		r.Use(umw.RequireUser)
+		r.Get("/", usersController.CurrentUser)
+	})
 
 	r.NotFound(http.NotFound)
 
