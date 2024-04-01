@@ -82,6 +82,9 @@ func main() {
 		DB: db,
 	}
 	emailService := models.NewEmailService(cfg.SMTP)
+	galleryService := &models.GalleryService{
+		DB: db,
+	}
 
 	umw := controllers.UserMiddleware{
 		SessionService: sessionService,
@@ -128,6 +131,12 @@ func main() {
 		r.Use(umw.RequireUser)
 		r.Get("/", usersController.CurrentUser)
 	})
+
+	galleriesController := controllers.Galleries{
+		GalleryService: galleryService,
+	}
+	galleriesController.Templates.New = views.Must(views.ParseFS(templates.FS, "tailwind.gohtml", "galleries/new.gohtml"))
+	r.Get("/galleries/new", galleriesController.New)
 
 	r.NotFound(http.NotFound)
 
