@@ -140,6 +140,7 @@ func main() {
 		r.Group(func(r chi.Router) {
 			r.Use(umw.RequireUser)
 			r.Get("/new", galleriesController.New)
+			r.Post("/", galleriesController.Create)
 		})
 	})
 
