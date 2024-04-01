@@ -3,7 +3,7 @@
   <h1 class="pt-4 pb-8 text-3xl font-bold text-gray-800">
     Edit Your Gallery
   </h1>
-  <form action="/galleries/{{ .ID }}/edit" method="post">
+  <form action="/galleries/{{ .ID }}" method="post">
     {{ csrfField }}
     <div class="py-2">
       <label for="title" class="text-sm font-semibold text-gray-800">
