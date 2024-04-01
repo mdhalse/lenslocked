@@ -136,10 +136,12 @@ func main() {
 		GalleryService: galleryService,
 	}
 	galleriesController.Templates.New = views.Must(views.ParseFS(templates.FS, "tailwind.gohtml", "galleries/new.gohtml"))
+	galleriesController.Templates.Edit = views.Must(views.ParseFS(templates.FS, "tailwind.gohtml", "galleries/edit.gohtml"))
 	r.Route("/galleries", func(r chi.Router) {
 		r.Group(func(r chi.Router) {
 			r.Use(umw.RequireUser)
 			r.Get("/new", galleriesController.New)
+			r.Get("/{id}/edit", galleriesController.Edit)
 			r.Post("/", galleriesController.Create)
 		})
 	})
