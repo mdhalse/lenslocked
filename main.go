@@ -91,7 +91,7 @@ func main() {
 	}
 
 	r := chi.NewRouter()
-	r.Use(csrf.Protect([]byte(cfg.CSRF.Key), csrf.Secure(cfg.CSRF.Secure)))
+	r.Use(csrf.Protect([]byte(cfg.CSRF.Key), csrf.Secure(cfg.CSRF.Secure), csrf.Path("/")))
 	r.Use(umw.SetUser)
 	r.Use(middleware.RequestID)
 	r.Use(middleware.CleanPath)
@@ -136,7 +136,12 @@ func main() {
 		GalleryService: galleryService,
 	}
 	galleriesController.Templates.New = views.Must(views.ParseFS(templates.FS, "tailwind.gohtml", "galleries/new.gohtml"))
-	r.Get("/galleries/new", galleriesController.New)
+	r.Route("/galleries", func(r chi.Router) {
+		r.Group(func(r chi.Router) {
+			r.Use(umw.RequireUser)
+			r.Get("/new", galleriesController.New)
+		})
+	})
 
 	r.NotFound(http.NotFound)
 
