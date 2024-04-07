@@ -3,6 +3,7 @@ package models
 import (
 	"database/sql"
 	"fmt"
+	"io"
 	"io/fs"
 	"os"
 	"path"
@@ -127,9 +128,9 @@ func (service *GalleryService) Images(galleryID int) ([]Image, error) {
 	for _, file := range allFiles {
 		if hasExtension(file, service.extensions()) {
 			images = append(images, Image{
-				Filename: filepath.Base(file),
+				Filename:  filepath.Base(file),
 				GalleryID: galleryID,
-				Path: file,
+				Path:      file,
 			})
 		}
 	}
@@ -146,10 +147,30 @@ func (service *GalleryService) Image(galleryID int, filename string) (Image, err
 		return Image{}, fmt.Errorf("querying for image: %w", err)
 	}
 	return Image{
-		Filename: filename,
+		Filename:  filename,
 		GalleryID: galleryID,
-		Path: imagePath,
+		Path:      imagePath,
 	}, nil
+}
+
+func (service *GalleryService) CreateImage(galleryID int, filename string, contents io.Reader) error {
+	galleryDir := service.galleryDir(galleryID)
+	err := os.MkdirAll(galleryDir, 0755)
+	if err != nil {
+		return fmt.Errorf("creating gallery-%d images directory: %w", galleryID, err)
+	}
+	imagePath := filepath.Join(galleryDir, filename)
+	dst, err := os.Create(imagePath)
+	if err != nil {
+		return fmt.Errorf("creating image file: %w", err)
+	}
+	defer dst.Close()
+
+	_, err = io.Copy(dst, contents)
+	if err != nil {
+		return fmt.Errorf("copying contents to image: %w", err)
+	}
+	return nil
 }
 
 func (service *GalleryService) DeleteImage(galleryID int, filename string) error {

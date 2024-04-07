@@ -34,7 +34,7 @@ func (u Users) New(w http.ResponseWriter, r *http.Request) {
 
 func (u Users) Create(w http.ResponseWriter, r *http.Request) {
 	var data struct {
-		Email string
+		Email    string
 		Password string
 	}
 	data.Email = r.FormValue("email")
@@ -43,7 +43,7 @@ func (u Users) Create(w http.ResponseWriter, r *http.Request) {
 	user, err := u.UserService.Create(data.Email, data.Password)
 	if err != nil {
 		if errors.Is(err, models.ErrEmailTaken) {
-			err = errors.Public(err, "That email address is already associated with an account.")	
+			err = errors.Public(err, "That email address is already associated with an account.")
 		}
 		u.Templates.New.Execute(w, r, data, err)
 		return

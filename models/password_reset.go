@@ -56,8 +56,8 @@ func (service *PasswordResetService) Create(email string) (*PasswordReset, error
 		duration = DefaultResetDuration
 	}
 	pwReset := PasswordReset{
-		UserID: userID,
-		Token: token,
+		UserID:    userID,
+		Token:     token,
 		TokenHash: service.hash(token),
 		ExpiresAt: time.Now().Add(duration),
 	}
