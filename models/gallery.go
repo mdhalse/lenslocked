@@ -3,9 +3,18 @@ package models
 import (
 	"database/sql"
 	"fmt"
+	"path"
+	"path/filepath"
+	"strings"
 
 	"github.com/mdhalse/lenslocked/errors"
 )
+
+type Image struct {
+	Filename  string
+	GalleryID int
+	Path      string
+}
 
 type Gallery struct {
 	ID     int
@@ -14,12 +23,13 @@ type Gallery struct {
 }
 
 type GalleryService struct {
-	DB *sql.DB
+	DB        *sql.DB
+	ImagesDir string
 }
 
 func (service *GalleryService) Create(title string, userID int) (*Gallery, error) {
 	gallery := Gallery{
-		Title: title,
+		Title:  title,
 		UserID: userID,
 	}
 	row := service.DB.QueryRow(`
@@ -102,4 +112,47 @@ func (service *GalleryService) Delete(id int) error {
 		return fmt.Errorf("delete gallery: %w", err)
 	}
 	return nil
+}
+
+func (service *GalleryService) Images(galleryID int) ([]Image, error) {
+	globPattern := filepath.Join(service.galleryDir(galleryID), "*")
+	allFiles, err := filepath.Glob(globPattern)
+	if err != nil {
+		return nil, fmt.Errorf("retrieving gallery images: %w", err)
+	}
+
+	var images []Image
+	for _, file := range allFiles {
+		if hasExtension(file, service.extensions()) {
+			images = append(images, Image{
+				Filename: filepath.Base(file),
+				GalleryID: galleryID,
+				Path: file,
+			})
+		}
+	}
+	return images, nil
+}
+
+func (service *GalleryService) extensions() []string {
+	return []string{"*.png", ".jpg", ".jpeg", ".gif"}
+}
+
+func (service *GalleryService) galleryDir(id int) string {
+	imagesDir := service.ImagesDir
+	if imagesDir == "" {
+		imagesDir = "images"
+	}
+	return path.Join(imagesDir, fmt.Sprintf("gallery-%d", id))
+}
+
+func hasExtension(file string, extensions []string) bool {
+	file = strings.ToLower(file)
+	for _, ext := range extensions {
+		ext = strings.ToLower(ext)
+		if filepath.Ext(file) == ext {
+			return true
+		}
+	}
+	return false
 }
