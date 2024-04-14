@@ -70,16 +70,22 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-
-	db, err := models.Open(cfg.PSQL)
+	err = run(cfg)
 	if err != nil {
 		panic(err)
+	}
+}
+
+func run (cfg config) error {
+	db, err := models.Open(cfg.PSQL)
+	if err != nil {
+		return err
 	}
 	defer db.Close()
 
 	err = models.MigrateFS(db, migrations.FS, ".")
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	userService := &models.UserService{
@@ -171,8 +177,5 @@ func main() {
 	r.NotFound(http.NotFound)
 
 	fmt.Printf("Starting the server on %s...\n", cfg.Server.Address)
-	err = http.ListenAndServe(cfg.Server.Address, r)
-	if err != nil {
-		panic(err)
-	}
+	return http.ListenAndServe(cfg.Server.Address, r)
 }
